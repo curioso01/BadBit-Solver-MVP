@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { useLocale } from '@/hooks/use-locale';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,12 +18,22 @@ export default function AuthPage(): JSX.Element {
 
   const submit = async (): Promise<void> => {
     setError(null);
+
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      setError('Supabase não está configurado. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+      return;
+    }
+
     const fn = isSignup ? supabase.auth.signUp : supabase.auth.signInWithPassword;
     const { error: authError } = await fn({ email, password });
+
     if (authError) {
       setError(authError.message);
       return;
     }
+
     router.push('/onboarding');
   };
 
@@ -32,10 +42,29 @@ export default function AuthPage(): JSX.Element {
       <Card className="max-w-md w-full space-y-4">
         <h1 className="text-2xl font-semibold text-center">{dictionary.auth.title}</h1>
         <Input placeholder={dictionary.auth.email} value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Input type="password" placeholder={dictionary.auth.password} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Input
+          type="password"
+          placeholder={dictionary.auth.password}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        {!isSupabaseConfigured ? (
+          <p className="text-amber-300 text-sm">
+            Supabase não configurado neste ambiente. O login está temporariamente indisponível.
+          </p>
+        ) : null}
+
         {error ? <p className="text-red-400 text-sm">{error}</p> : null}
-        <Button onClick={submit} className="w-full">{isSignup ? dictionary.auth.signup : dictionary.auth.login}</Button>
-        <Button onClick={() => setIsSignup((s) => !s)} className="w-full bg-mint/20 text-mint border-mint/40">
+
+        <Button onClick={submit} className="w-full" disabled={!isSupabaseConfigured}>
+          {isSignup ? dictionary.auth.signup : dictionary.auth.login}
+        </Button>
+        <Button
+          onClick={() => setIsSignup((s) => !s)}
+          className="w-full bg-mint/20 text-mint border-mint/40"
+          disabled={!isSupabaseConfigured}
+        >
           {isSignup ? dictionary.auth.login : dictionary.auth.signup}
         </Button>
       </Card>
