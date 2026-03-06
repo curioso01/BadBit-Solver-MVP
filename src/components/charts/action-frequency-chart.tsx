@@ -9,8 +9,9 @@ const data = [
 ];
 
 export const ActionFrequencyChart = (): JSX.Element => (
-  <div className="h-64">
-    <ResponsiveContainer width="100%" height="100%">
+  <div className="flex h-64 flex-col">
+    <div className="min-h-0 flex-1">
+      <ResponsiveContainer width="100%" height="100%">
       <PieChart>
         <Pie
           data={data}
@@ -37,11 +38,15 @@ export const ActionFrequencyChart = (): JSX.Element => (
           itemStyle={{ color: '#E2E8F0' }}
         />
       </PieChart>
-    </ResponsiveContainer>
+      </ResponsiveContainer>
+    </div>
 
-    <div className="mt-3 grid grid-cols-3 gap-2">
+    <div className="mt-3 grid shrink-0 grid-cols-3 gap-2 pb-1">
       {data.map((entry) => (
-        <div key={entry.name} className="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-2 text-center">
+        <div
+          key={entry.name}
+          className="flex h-full min-h-[58px] flex-col justify-center rounded-xl border border-white/10 bg-slate-900/50 px-3 py-2 text-center"
+        >
           <p className="text-[11px] uppercase tracking-wider text-slate-400">{entry.name}</p>
           <p className="mt-1 text-sm font-semibold text-slate-100">{entry.value}%</p>
         </div>
